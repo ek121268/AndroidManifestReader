@@ -28,7 +28,7 @@ public class AndroidXMLDecompress {
 		// 4th word is: Number of strings in string table
 		// WARNING: Sometime I indiscriminently display or refer to word in
 		// little endian storage format, or in integer format (ie MSB first).
-		int numbStrings = LEW(xml, 4 * 4);
+		int numbStrings = lew(xml, 4 * 4);
 
 		// StringIndexTable starts at offset 24x, an array of 32 bit LE offsets
 		// of the length/string data in the StringTable.
@@ -44,12 +44,12 @@ public class AndroidXMLDecompress {
 		// StringTable. There is some unknown data after the StringTable, scan
 		// forward from this point to the flag for the start of an XML start
 		// tag.
-		int xmlTagOff = LEW(xml, 3 * 4); // Start from the offset in the 3rd
+		int xmlTagOff = lew(xml, 3 * 4); // Start from the offset in the 3rd
 		// word.
 		// Scan forward until we find the bytes: 0x02011000(x00100102 in normal
 		// int)
 		for (int ii = xmlTagOff; ii < xml.length - 4; ii += 4) {
-			if (LEW(xml, ii) == startTag) {
+			if (lew(xml, ii) == startTag) {
 				xmlTagOff = ii;
 				break;
 			}
@@ -92,16 +92,16 @@ public class AndroidXMLDecompress {
 		int indent = 0;
 		int startTagLineNo = -2;
 		while (off < xml.length) {
-			int tag0 = LEW(xml, off);
+			int tag0 = lew(xml, off);
 			// int tag1 = LEW(xml, off+1*4);
-			int lineNo = LEW(xml, off + 2 * 4);
+			int lineNo = lew(xml, off + 2 * 4);
 			// int tag3 = LEW(xml, off+3*4);
-			int nameNsSi = LEW(xml, off + 4 * 4);
-			int nameSi = LEW(xml, off + 5 * 4);
+			int nameNsSi = lew(xml, off + 4 * 4);
+			int nameSi = lew(xml, off + 5 * 4);
 
 			if (tag0 == startTag) { // XML START TAG
-				int tag6 = LEW(xml, off + 6 * 4); // Expected to be 14001400
-				int numbAttrs = LEW(xml, off + 7 * 4); // Number of Attributes
+				int tag6 = lew(xml, off + 6 * 4); // Expected to be 14001400
+				int numbAttrs = lew(xml, off + 7 * 4); // Number of Attributes
 				// to follow
 				// int tag8 = LEW(xml, off+8*4); // Expected to be 00000000
 				off += 9 * 4; // Skip over 6+3 words of startTag data
@@ -112,15 +112,15 @@ public class AndroidXMLDecompress {
 				// Look for the Attributes
 				StringBuffer sb = new StringBuffer();
 				for (int ii = 0; ii < numbAttrs; ii++) {
-					int attrNameNsSi = LEW(xml, off); // AttrName Namespace Str
+					int attrNameNsSi = lew(xml, off); // AttrName Namespace Str
 					// Ind, or FFFFFFFF
-					int attrNameSi = LEW(xml, off + 1 * 4); // AttrName String
+					int attrNameSi = lew(xml, off + 1 * 4); // AttrName String
 					// Index
-					int attrValueSi = LEW(xml, off + 2 * 4); // AttrValue Str
+					int attrValueSi = lew(xml, off + 2 * 4); // AttrValue Str
 					// Ind, or
 					// FFFFFFFF
-					int attrFlags = LEW(xml, off + 3 * 4);
-					int attrResId = LEW(xml, off + 4 * 4); // AttrValue
+					int attrFlags = lew(xml, off + 3 * 4);
+					int attrResId = lew(xml, off + 4 * 4); // AttrValue
 					// ResourceId or dup
 					// AttrValue StrInd
 					off += 5 * 4; // Skip over the 5 words of an attribute
@@ -175,14 +175,14 @@ public class AndroidXMLDecompress {
 	public static String compXmlString(byte[] xml, int sitOff, int stOff, int strInd) {
 		if (strInd < 0)
 			return null;
-		int strOff = stOff + LEW(xml, sitOff + strInd * 4);
+		int strOff = stOff + lew(xml, sitOff + strInd * 4);
 		return compXmlStringAt(xml, strOff);
 	}
 
 	public static String spaces = "                                             ";
 
 	public static void prtIndent(int indent, String str) {
-		prt(spaces.substring(0, Math.min(indent * 2, spaces.length())) + str);
+	//	prt(spaces.substring(0, Math.min(indent * 2, spaces.length())) + str);
 	}
 
 	// compXmlStringAt -- Return the string stored in StringTable format at
@@ -199,7 +199,7 @@ public class AndroidXMLDecompress {
 
 	// LEW -- Return value of a Little Endian 32 bit word from the byte array
 	// at offset off.
-	public static int LEW(byte[] arr, int off) {
+	public static int lew(byte[] arr, int off) {
 		return arr[off + 3] << 24 & 0xff000000 | arr[off + 2] << 16 & 0xff0000 | arr[off + 1] << 8 & 0xff00 | arr[off] & 0xFF;
 	} // end of LEW
 
@@ -220,7 +220,7 @@ public class AndroidXMLDecompress {
 		}
 
 		byte[] buf = new byte[10240];
-		int bytesRead = is.read(buf);
+		is.read(buf);
 
 		is.close();
 		if (zip != null) {
@@ -228,6 +228,6 @@ public class AndroidXMLDecompress {
 		}
 
 		String xml = AndroidXMLDecompress.decompressXML(buf);
-		System.out.println(xml);
+//		System.out.println(xml);
 	}
 }
